@@ -1,0 +1,672 @@
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>GE5227 Group3 Final Project</title>
+
+    <style>
+      html,
+      body,
+      #viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+        
+        
+       #timeSlider {
+        position: absolute;
+        left: 0%;
+        right: 0%;
+        bottom: 15px;
+      }
+    </style>
+    
+    <link rel="stylesheet" href="https://js.arcgis.com/4.23/esri/themes/dark/main.css">
+    <script src="https://js.arcgis.com/4.22/"></script>
+    
+    <script>
+      require(["esri/config","esri/Map", "esri/views/MapView", "esri/layers/FeatureLayer", "esri/widgets/BasemapToggle", "esri/widgets/Legend", "esri/widgets/LayerList", "esri/widgets/Search", "esri/widgets/Compass", "esri/widgets/ScaleBar", "esri/widgets/Expand", "esri/widgets/TimeSlider", "esri/WebMap"], function (esriConfig,Map, MapView, FeatureLayer, BasemapToggle, Legend, LayerList, Search, Compass, ScaleBar, Expand, TimeSlider, WebMap) {
+
+        esriConfig.apiKey = "AAPK16a4fd5cb3074c5a91d6034299056cfbeNdC7vG9YWtdj2XMcU7d59uZMq1KkDcd66W36Jv31tNL8pQjX_BjIS7dEzfdnmy-";
+        
+        // Create a basemap and set the basemap property to "OpenStreetMap (Light Gray Canvas)"
+       // const map = new Map({
+      //    basemap: "dark-gray-vector" // Basemap layer service
+       // });       
+          
+          
+          
+        const webmap = new WebMap({
+          portalItem: {
+            // autocasts as new PortalItem()
+            id: "e9923d40789844689a520c91234e4d96"
+          }
+        });
+          
+          
+        // Add the MapView module to display a 2D view
+        const view = new MapView({
+          map: webmap,
+          center: [103.80420568090616, 1.3618341452437996], // Longitude, latitude
+          zoom: 11, // Zoom level
+          container: "viewDiv" // Div element
+        });
+          
+        
+          
+          
+        view.when(() => {
+          // get the first layer in the collection of operational layers in the WebMap
+          // when the resources in the MapView have loaded.
+          const featureLayer = webmap.layers.getItemAt(0);
+
+          const legend = new Legend({
+            view: view,
+            layerInfos: [
+              {
+                layer: featureLayer,
+                title: "Rail Station"
+              }
+            ]
+          });
+
+          // Add widget to the bottom right corner of the view
+      //    view.ui.add(legend, "bottom-right");
+        });
+
+       
+          
+          
+          
+
+        <!--render O weekends layer-->   
+        
+       const defaultSym = {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          color: [0, 0, 0, 0],
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: "#C791EB",
+            width: 1
+          }
+        };
+          
+      const O_weekendslayerRenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: defaultSym,
+          visualVariables: [
+            {
+              type: "size",
+              field: "orgn_tr",
+            
+              legendOptions: {
+                title: "% population in poverty by county"
+              },
+              stops: [
+                {
+                  value: 10000,
+                  size: 4,
+                  label: "<10000"
+                },
+                {
+                  value: 30000,
+                  size: 12,
+                  label: "30000"
+                },
+                {
+                  value: 50000,
+                  size: 20,
+                  label: "50000"
+                },
+                {
+                  value: 90000,
+                  size: 30,
+                  label: "90000"
+                },
+                   {
+                  value: 150000,
+                  size: 40,
+                  label: ">150000"
+                }
+              ]
+            }
+          ]
+        };  
+          
+          
+          
+      <!--Add  O_weekendslayer -->
+      const O_weekendslayer = new FeatureLayer({
+        url: "https://services6.arcgis.com/ON5ETd0LLRmSPTsE/arcgis/rest/services/Train_OD/FeatureServer/0",
+        renderer: O_weekendslayerRenderer,
+        //labelingInfo: [PCNAccessPointLabels],
+        outFields: ["*"],
+          
+        timeInfo: {
+            startField: "time_text_Converted", // name of the date field
+             interval: { // specify time interval for
+                  unit: "hours",
+                  value: 1
+                }
+
+            },
+            popupTemplate: {
+              title: "Station",
+              content: "Station {STN_NAM}"
+            },   // add the presentd pop-up information when select the features
+          definitionExpression: "1=1",
+          effect: "bloom(4 0 0.5)"
+        
+      });
+
+      webmap.add(O_weekendslayer);  
+          
+          
+          
+      
+          
+          
+     <!--adding O weekday layer-->
+          
+       const defaultSym1 = {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          color: [0, 0, 0, 0],
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: "#C791EB",
+            width: 1
+          }
+        };
+          
+      const O_weekdaylayerRenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: defaultSym1,
+          visualVariables: [
+            {
+              type: "size",
+              field: "orgn_tr",
+            
+              legendOptions: {
+                title: "trips"
+              },
+              stops: [
+                {
+                  value: 10000,
+                  size: 4,
+                  label: "<10000"
+                },
+                {
+                  value: 30000,
+                  size: 12,
+                  label: "30000"
+                },
+                {
+                  value: 50000,
+                  size: 20,
+                  label: "50000"
+                },
+                {
+                  value: 90000,
+                  size: 35,
+                  label: "90000"
+                },
+                   {
+                  value: 150000,
+                  size: 50,
+                  label: ">150000"
+                }
+              ]
+            }
+          ]
+      };
+          
+                
+          
+    
+      <!--Add  O_weekdaylayer -->      
+      const O_weekdaylayer = new FeatureLayer({
+        url: "https://services6.arcgis.com/ON5ETd0LLRmSPTsE/arcgis/rest/services/Train_OD/FeatureServer/1",
+        renderer: O_weekdaylayerRenderer,
+        //labelingInfo: [PCNAccessPointLabels],
+        outFields: ["*"],
+          
+        timeInfo: {
+            startField: "time_text_Converted", // name of the date field
+            interval: { // specify time interval for
+                  unit: "hours",
+                  value: 1
+                }
+            
+            },
+            popupTemplate: {
+              title: "Station",
+              content: "Station {STN_NAM}"
+            },   // add the presentd pop-up information when select the features
+          definitionExpression: "1=1",
+          effect: "bloom(6 0 0.5)"
+        
+      });
+
+      webmap.add(O_weekdaylayer);  
+          
+          
+          
+          
+              
+        <!--render D weekends layer-->   
+        
+       const defaultSym2 = {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          color: [0, 0, 0, 0],
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: "#89CBF3",
+            width: 1
+          }
+        };
+          
+      const D_weekendslayerRenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: defaultSym2,
+          visualVariables: [
+            {
+              type: "size",
+              field: "des_trp",
+            
+              legendOptions: {
+                title: "% population in poverty by county"
+              },
+              stops: [
+                {
+                  value: 10000,
+                  size: 4,
+                  label: "<10000"
+                },
+                {
+                  value: 30000,
+                  size: 12,
+                  label: "30000"
+                },
+                {
+                  value: 50000,
+                  size: 20,
+                  label: "50000"
+                },
+                {
+                  value: 90000,
+                  size: 30,
+                  label: "90000"
+                },
+                   {
+                  value: 150000,
+                  size: 40,
+                  label: ">150000"
+                }
+              ]
+            }
+          ]
+        };  
+          
+          
+          
+      <!--Add  D_weekendslayer -->
+      const D_weekendslayer = new FeatureLayer({
+        url: "https://services6.arcgis.com/ON5ETd0LLRmSPTsE/arcgis/rest/services/Train_OD/FeatureServer/2",
+        renderer: D_weekendslayerRenderer,
+        //labelingInfo: [PCNAccessPointLabels],
+        outFields: ["*"],
+          
+        timeInfo: {
+            startField: "time_text_Converted", // name of the date field
+             interval: { // specify time interval for
+                  unit: "hours",
+                  value: 1
+                }
+
+            },
+            popupTemplate: {
+              title: "Station",
+              content: "Station {STN_NAM}"
+            },   // add the presentd pop-up information when select the features
+          definitionExpression: "1=1",
+          effect: "bloom(5 0 0.5)"
+        
+      });
+
+      webmap.add(D_weekendslayer);  
+          
+          
+          
+          
+          
+          
+        <!--adding D weekday layer-->
+          
+       const defaultSym3 = {
+          type: "simple-marker", // autocasts as new SimpleMarkerSymbol()
+          color: [0, 0, 0, 0],
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: "#89CBF3",
+            width: 1
+          }
+        };
+          
+      const D_weekdaylayerRenderer = {
+          type: "simple", // autocasts as new SimpleRenderer()
+          symbol: defaultSym3,
+          visualVariables: [
+            {
+              type: "size",
+              field: "des_trp",
+            
+              legendOptions: {
+                title: "trips"
+              },
+              stops: [
+               {
+                  value: 10000,
+                  size: 4,
+                  label: "<10000"
+                },
+                {
+                  value: 30000,
+                  size: 12,
+                  label: "30000"
+                },
+                {
+                  value: 50000,
+                  size: 20,
+                  label: "50000"
+                },
+                {
+                  value: 90000,
+                  size: 35,
+                  label: "90000"
+                },
+                   {
+                  value: 150000,
+                  size: 50,
+                  label: ">150000"
+                }
+              ]
+            }
+          ]
+      };
+          
+          
+    
+      <!--Add  D_weekdaylayer -->      
+      const D_weekdaylayer = new FeatureLayer({
+        url: "https://services6.arcgis.com/ON5ETd0LLRmSPTsE/arcgis/rest/services/Train_OD/FeatureServer/3",
+        renderer: D_weekdaylayerRenderer,
+        //labelingInfo: [PCNAccessPointLabels],
+        outFields: ["*"],
+          
+        timeInfo: {
+            startField: "time_text_Converted", // name of the date field
+            interval: { // specify time interval for
+                  unit: "hours",
+                  value: 1
+                }
+            
+            },
+            popupTemplate: {
+              title: "Station",
+              content: "Station {STN_NAM}"
+            },   // add the presentd pop-up information when select the features
+          definitionExpression: "1=1",
+          effect: "bloom(2 0 0.5)"
+        
+      });
+
+      webmap.add(D_weekdaylayer);   
+        
+          
+          
+          
+      <!--adding ODWeekdayRenderer-->
+          
+        const defaultSymLine = {
+          type: "simple-line", // autocasts as new SimpleFillSymbol()
+          outline: {
+            // autocasts as new SimpleLineSymbol()
+            color: [248, 248, 255, 0.2],
+            width: "0.5px"
+          }
+        };
+          
+        const ODWeekdayRenderer = {
+            type: "simple",  // autocasts as new SimpleRenderer()
+            symbol: defaultSymLine,
+            visualVariables: [{
+                type: "color",
+                field: "TOTAL_TRIPS",
+                stops: [{ value: 43, color: "#FFFCD4" },
+                        { value: 253, color: "#e74c3c" }]
+            }]
+        };
+          
+          
+    
+      <!--Add  Weekday_ODLinelayer -->      
+      const Weekday_ODLinelayer = new FeatureLayer({
+        url: "https://services6.arcgis.com/aZfd3B0GZlBPeiXO/arcgis/rest/services/202202_Top300_Line/FeatureServer/0",
+        renderer: ODWeekdayRenderer,
+        outFields: ["*"],
+          
+        timeInfo: {
+            startField: "Time_text_UTC", // name of the date field
+            interval: { // specify time interval for
+                  unit: "hours",
+                  value: 1
+                }
+            
+            },
+            popupTemplate: {
+              title: "Weekday OD Line",
+              content: "Origin Code {ORIGIN_PT_CODE} <br> Destination Code {DESTINATION_PT_CODE}"
+            },   // add the presentd pop-up information when select the features
+          definitionExpression: "1=1" 
+      });
+
+      webmap.add(Weekday_ODLinelayer); 
+          
+          
+          
+       <!--adding ODWeekendRenderer-->
+          
+          
+        const ODWeekendRenderer = {
+            type: "simple",  // autocasts as new SimpleRenderer()
+            symbol: defaultSymLine,
+            visualVariables: [{
+                type: "color",
+                field: "TOTAL_TRIPS",
+                stops: [{ value: 28, color: "#FFFCD4" },
+                        { value: 183, color: "#e74c3c" }]
+            }]
+        };
+          
+          
+    
+      <!--Add  Weekend_ODLinelayer -->      
+      const Weekend_ODLinelayer = new FeatureLayer({
+        url: "https://services6.arcgis.com/aZfd3B0GZlBPeiXO/arcgis/rest/services/202202_Top300_Line/FeatureServer/1",
+        renderer: ODWeekendRenderer,
+        outFields: ["*"],
+          
+        timeInfo: {
+            startField: "Time_text_UTC", // name of the date field
+            interval: { // specify time interval for
+                  unit: "hours",
+                  value: 1
+                }
+            
+            },
+            popupTemplate: {
+              title: "Weekend OD Line",
+              content: "Origin Code {ORIGIN_PT_CODE} <br> Destination Code {DESTINATION_PT_CODE}"
+            },   // add the presentd pop-up information when select the features
+          definitionExpression: "1=1"
+      });
+
+      webmap.add(Weekend_ODLinelayer);    
+          
+          
+      <!--Set the time slider -->
+        
+
+        // time slider widget initialization
+      const timeSlider = new TimeSlider({
+          container: "timeSlider",
+          mode: "time-window",
+          timeVisible:true,
+          fullTimeExtent: {
+            start: new Date(2022,1, 1,0),
+            end: new Date(2022,1, 1,24)
+          },
+        //  timeExtent:{
+         //   start: new Date(2022,1, 1,5),
+        //    end: new Date(2022,1, 1,6)
+        //  },
+          stops: {
+            interval: {
+              value: 1,
+              unit: "hours"
+            }
+          },
+    
+         
+          view: view
+          
+        });
+          
+        
+          
+     
+          
+        // Add the compass  
+        let compass = new Compass({
+          view: view
+        });
+
+        // adds the compass to the top left corner of the MapView
+        view.ui.add(compass, "top-left");          
+        // Add the toggle between basemaps  
+        const basemapToggle = new BasemapToggle({
+        view: view,
+        nextBasemap: "arcgis-imagery"
+        }); 
+          
+        view.ui.add(basemapToggle, "top-left");
+
+        
+        // Add the Search widget   
+        const searchWidget = new Search({
+          view: view
+        });
+
+        view.ui.add(searchWidget, {
+          position: "top-right",
+          index: 2
+        });
+
+        // Add the function of LayerList to toggle the visibility of layers  
+        let layerList = new LayerList({
+          view: view
+        });  
+          
+        const layerExpand = new Expand({
+          expandIconClass: "esri-icon-visible",
+          expandTooltip: "Visibility of Layers",
+          view: view,
+          content: layerList,
+          expanded: false
+        });
+          
+        view.ui.add(layerExpand, "top-right");   
+          
+        // Add the scale bar
+        let scaleBar = new ScaleBar({
+          view: view
+        });
+
+        // Add widget to the bottom left corner of the view
+        view.ui.add(scaleBar, {
+          position: "top-left"
+        });
+          
+        // Add the legend    
+        const legend = new Legend({
+          view: view
+        });
+          
+        const legendExpand = new Expand({
+          expandIconClass: "esri-icon-legend",
+          expandTooltip: "Legend",
+          view: view,
+          content: legend,
+          expanded: false
+        });
+          
+        view.ui.add(legendExpand, "top-right");          
+ 
+      // Define a pop-up for MRT Station
+      const popupSTNname = {
+        "title": "Station Name",
+        "content": "<b>Name:</b> {STN_NAME}<br><b>No of Railway Line:</b> {STN_NO}"
+      }
+      
+      
+      
+      
+      
+        /* 
+        // Add the layer for MRT station Buffer
+        const MRTLayer = new FeatureLayer({
+          title: "MRT Station Catchment",
+          url: "https://services5.arcgis.com/KiRa9d9aHfdXiCqt/ArcGIS/rest/services/Buffer_of_MRT_Station/FeatureServer/0"
+        });
+          
+        map.add(MRTLayer, 1);    */   
+      
+      
+      
+      
+      /*
+      
+      //Create a MRTStation FeatureLayer. Set the url, outFields, and popupTemplate properties before adding MRTStation to the map.
+      const MRTStation = new FeatureLayer({
+        url: "https://services5.arcgis.com/KiRa9d9aHfdXiCqt/ArcGIS/rest/services/MRT_Station/FeatureServer/0",
+        outFields: ["STN_NAME","STN_NO"],
+        popupTemplate: popupSTNname 
+      });
+
+      // Change the style of this layer to distinguish it from the layer of places of interests using the SimpleRenderer      
+      MRTStation.renderer = {
+        type: "simple",  // autocasts as new SimpleRenderer()
+        symbol: {
+          type: "simple-marker",  // autocasts as new SimpleMarkerSymbol()
+          size: 6,
+          color: "blue",
+          outline: {  // autocasts as new SimpleLineSymbol()
+            width: 0.5,
+            color: "white"
+          }
+        }
+      };              
+          
+      map.add(MRTStation);*/
+                   
+      });
+    </script>
+    
+  </head>
+  <body>
+    <div id="viewDiv"></div>
+     <div id="timeSlider"></div>
+  </body>
+</html>
